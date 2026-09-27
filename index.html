@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox - LEGO diagnose</title>
+
+  <title>Eftelblox - LEGO</title>
+
+  <!-- Node-PoweredUp voor LEGO Powered Up -->
+  <script src="https://cdn.jsdelivr.net/npm/node-poweredup@10.0.0/dist/browser/poweredup.js"></script>
 
   <style>
     body {
@@ -12,6 +16,7 @@
       background: #151515;
       color: white;
       font-family: Arial, sans-serif;
+
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,12 +24,16 @@
 
     .pagina {
       width: 90%;
-      max-width: 550px;
+      max-width: 500px;
       text-align: center;
     }
 
     h1 {
-      font-size: 36px;
+      font-size: 38px;
+    }
+
+    h2 {
+      font-size: 24px;
     }
 
     button {
@@ -33,11 +42,16 @@
       margin-top: 15px;
       border: none;
       border-radius: 18px;
-      font-size: 21px;
+      font-size: 22px;
       font-weight: bold;
       color: white;
       background: #2563eb;
       cursor: pointer;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
     }
 
     #status {
@@ -45,17 +59,7 @@
       padding: 18px;
       background: #222;
       border-radius: 12px;
-      text-align: left;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .goed {
-      color: #4ade80;
-    }
-
-    .fout {
-      color: #f87171;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -66,113 +70,80 @@
 
     <h1>🎢 Eftelblox</h1>
 
-    <h2>LEGO diagnose</h2>
+    <h2>Danse Macabre</h2>
 
-    <button id="testKnop">
-      🔍 TEST LEGO-HUB
+    <button id="verbindenKnop">
+      🔗 VERBIND MET LEGO
     </button>
 
     <div id="status">
-      Nog niet getest.
+      Nog niet verbonden.
     </div>
 
   </div>
 
   <script>
-    const testKnop = document.getElementById("testKnop");
+    const verbindenKnop = document.getElementById("verbindenKnop");
     const status = document.getElementById("status");
 
-    const HUB_SERVICE =
-      "00001623-1212-efde-1623-785feabcd123";
+    const poweredUP = new PoweredUP.PoweredUP();
 
-    const BOOTLOADER_SERVICE =
-      "00001625-1212-efde-1623-785feabcd123";
+    let hub = null;
 
-    testKnop.addEventListener("click", async () => {
+    // Controleer of de browser Web Bluetooth ondersteunt
+    if (!PoweredUP.isWebBluetooth) {
+      status.textContent =
+        "❌ Deze browser ondersteunt Web Bluetooth niet.";
+    }
+
+    // Wanneer PoweredUp een hub vindt
+    poweredUP.on("discover", async function(nieuweHub) {
 
       try {
+        hub = nieuweHub;
 
-        status.innerHTML = "🔎 LEGO-hub zoeken...";
+        status.textContent =
+          "✅ Hub gevonden: " +
+          (hub.name || "Onbekende hub") +
+          "<br><br>🔌 Verbinden...";
 
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [
-            HUB_SERVICE,
-            BOOTLOADER_SERVICE
-          ]
-        });
+        await hub.connect();
 
         status.innerHTML =
-          "✅ Gevonden: <b>" +
-          (device.name || "Onbekende hub") +
-          "</b><br><br>" +
-          "🔌 Verbinding maken...";
+          "🟢 <b>VERBONDEN MET LEGO!</b><br><br>" +
+          "Hub: " +
+          (hub.name || "Onbekende hub");
 
-        const server = await device.gatt.connect();
-
-        status.innerHTML =
-          "🟢 Bluetooth verbonden.<br><br>" +
-          "🔍 LEGO-services controleren...";
-
-        const services = await server.getPrimaryServices();
-
-        let gevonden = "";
-
-        for (const service of services) {
-          gevonden +=
-            "<br>• " + service.uuid;
-        }
-
-        const heeftHubService =
-          services.some(
-            service =>
-              service.uuid.toLowerCase() === HUB_SERVICE.toLowerCase()
-          );
-
-        const heeftBootloader =
-          services.some(
-            service =>
-              service.uuid.toLowerCase() === BOOTLOADER_SERVICE.toLowerCase()
-          );
-
-        if (heeftHubService) {
-
-          status.innerHTML =
-            "<span class='goed'>✅ NORMALE LEGO HUB-SERVICE GEVONDEN!</span>" +
-            "<br><br>" +
-            "Dit is precies wat we nodig hebben." +
-            "<br><br>" +
-            "<b>Gevonden services:</b>" +
-            gevonden;
-
-        } else if (heeftBootloader) {
-
-          status.innerHTML =
-            "<span class='fout'>⚠️ BOOTLOADER-SERVICE GEVONDEN</span>" +
-            "<br><br>" +
-            "De hub lijkt niet in de normale Powered Up-modus te staan." +
-            "<br><br>" +
-            "<b>Gevonden services:</b>" +
-            gevonden;
-
-        } else {
-
-          status.innerHTML =
-            "<span class='fout'>❌ GEEN NORMALE LEGO HUB-SERVICE</span>" +
-            "<br><br>" +
-            "<b>Gevonden services:</b>" +
-            gevonden;
-        }
+        verbindenKnop.disabled = true;
 
       } catch (error) {
 
         console.error(error);
 
         status.innerHTML =
-          "<span class='fout'>❌ TEST MISLUKT</span>" +
-          "<br><br>" +
-          "<b>Fout:</b> " +
-          (error.message || error.name || "onbekend");
+          "❌ Verbinden mislukt.<br><br>" +
+          (error.message || error.name || "Onbekende fout");
+      }
+
+    });
+
+    // Start zoeken naar LEGO Powered Up-hubs
+    verbindenKnop.addEventListener("click", function() {
+
+      try {
+
+        status.textContent =
+          "🔎 LEGO Powered Up-hub zoeken...";
+
+        poweredUP.scan();
+
+      } catch (error) {
+
+        console.error(error);
+
+        status.innerHTML =
+          "❌ Zoeken mislukt.<br><br>" +
+          (error.message || error.name || "Onbekende fout");
       }
 
     });
