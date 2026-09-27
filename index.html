@@ -4,272 +4,2008 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Eftelblox - LEGO Motortest</title>
+  <title>Eftelblox - Showbesturing</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
-      background: #151515;
+      background:
+        radial-gradient(circle at top, #26364d 0%, #111827 45%, #080c12 100%);
       color: white;
       font-family: Arial, sans-serif;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .pagina {
-      width: 90%;
-      max-width: 500px;
-      text-align: center;
+      width: 92%;
+      max-width: 800px;
+      margin: auto;
+      padding: 25px 0 60px;
     }
 
     h1 {
-      font-size: 38px;
-      margin-bottom: 8px;
+      text-align: center;
+      font-size: 42px;
+      margin: 0;
     }
 
-    h2 {
-      font-size: 23px;
-      margin-bottom: 25px;
+    .ondertitel {
+      text-align: center;
+      color: #b9c2cf;
+      margin: 8px 0 25px;
+    }
+
+    .paneel {
+      background: #1f2937;
+      border-radius: 22px;
+      padding: 22px;
+      margin-top: 20px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+    }
+
+    .uitleg {
+      background: #111827;
+      padding: 18px;
+      border-radius: 15px;
+      line-height: 1.6;
+    }
+
+    button,
+    input,
+    select {
+      font-family: Arial, sans-serif;
     }
 
     button {
-      width: 100%;
-      padding: 22px;
-      margin-top: 14px;
-      border: none;
-      border-radius: 18px;
-      font-size: 22px;
-      font-weight: bold;
+      border: 0;
+      border-radius: 16px;
+      padding: 18px;
       color: white;
+      font-size: 20px;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    #verbindenKnop {
-      background: #2563eb;
-    }
-
-    #motorKnop {
-      background: #16a34a;
-    }
-
-    #stopKnop {
-      background: #dc2626;
-    }
-
     button:disabled {
-      background: #555;
+      opacity: 0.45;
       cursor: not-allowed;
     }
 
-    #status {
-      margin-top: 22px;
-      padding: 18px;
-      background: #222;
+    .grote-knop {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .blauw {
+      background: #2563eb;
+    }
+
+    .groen {
+      background: #16a34a;
+    }
+
+    .rood {
+      background: #dc2626;
+    }
+
+    .grijs {
+      background: #374151;
+    }
+
+    .klein-medewerker {
+      display: block;
+      margin: 30px auto 0;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .status {
+      margin-top: 15px;
+      background: #111827;
+      padding: 15px;
       border-radius: 12px;
-      line-height: 1.6;
+      line-height: 1.5;
       word-break: break-word;
+    }
+
+    input[type="file"],
+    input[type="number"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 13px;
+      margin-top: 7px;
+      border-radius: 12px;
+      border: 1px solid #4b5563;
+      background: #111827;
+      color: white;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 5px;
+    }
+
+    .verborgen {
+      display: none;
+    }
+
+    .rij {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .blok-lijst {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .blok {
+      background: #273449;
+      border-radius: 15px;
+      padding: 15px;
+      border-left: 6px solid #60a5fa;
+    }
+
+    .blok.start {
+      border-left-color: #22c55e;
+      background: #14351f;
+    }
+
+    .blok.wacht {
+      border-left-color: #f59e0b;
+    }
+
+    .blok.motor {
+      border-left-color: #38bdf8;
+    }
+
+    .blok.stop {
+      border-left-color: #ef4444;
+    }
+
+    .blok.einde {
+      border-left-color: #a78bfa;
+      background: #241e3b;
+    }
+
+    .blok-titel {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .blok-info {
+      margin-top: 6px;
+      color: #d1d5db;
+    }
+
+    .blok-knoppen {
+      display: flex;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .blok-knoppen button {
+      flex: 1;
+      padding: 9px;
+      background: #374151;
+      font-size: 16px;
+    }
+
+    .toevoegen {
+      background: #111827;
+      padding: 16px;
+      border-radius: 16px;
+      margin-top: 15px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-inhoud {
+      width: min(100%, 420px);
+      background: #1f2937;
+      padding: 25px;
+      border-radius: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .rij {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="pagina">
+<div class="pagina">
 
-    <h1>🎢 Eftelblox</h1>
+  <h1>🎢 Eftelblox</h1>
+  <div class="ondertitel">Attractie- en showbesturing</div>
 
-    <h2>LEGO Motor Test</h2>
 
-    <button id="verbindenKnop">
-      🔗 VERBIND MET LEGO
-    </button>
+  <!-- =====================================================
+       BEZOEKERSPANEEL
+       ===================================================== -->
 
-    <button id="motorKnop" disabled>
-      ⚙️ TEST MOTOR A
-    </button>
+  <section id="bezoekersPaneel">
 
-    <button id="stopKnop" disabled>
-      🛑 STOP MOTOR
-    </button>
+    <div class="paneel">
 
-    <div id="status">
-      Klaar.
+      <h2>🎭 Danse Macabre</h2>
+
+      <div class="uitleg">
+        <strong>Hoe werkt het?</strong>
+        <br><br>
+
+        1. Zet de LEGO Powered Up-hub aan.<br>
+        2. Druk op <strong>VERBIND MET LEGO</strong>.<br>
+        3. Kies jouw LEGO-hub in het Bluetooth-venster.<br>
+        4. Wacht tot er staat dat de hub verbonden is.<br>
+        5. Druk op <strong>START SHOW</strong>.<br><br>
+
+        De muziek en de LEGO-show worden daarna volgens
+        dezelfde tijdlijn gestart.
+      </div>
+
+      <button
+        id="verbindenKnop"
+        class="grote-knop blauw"
+      >
+        🔗 VERBIND MET LEGO
+      </button>
+
+      <button
+        id="startShowKnop"
+        class="grote-knop groen"
+        disabled
+      >
+        ▶️ START SHOW
+      </button>
+
+      <button
+        id="stopShowKnop"
+        class="grote-knop rood"
+        disabled
+      >
+        🛑 STOP SHOW
+      </button>
+
+      <div
+        id="bezoekerStatus"
+        class="status"
+      >
+        Nog niet verbonden met LEGO.
+      </div>
+
     </div>
+
+
+    <div class="paneel">
+
+      <h2>🎵 Huidige show</h2>
+
+      <div id="showInfo">
+        Show wordt geladen...
+      </div>
+
+    </div>
+
+
+    <button
+      id="werknemerKnop"
+      class="klein-medewerker"
+    >
+      medewerker
+    </button>
+
+  </section>
+
+
+  <!-- =====================================================
+       WERKNEMERPANEEL
+       ===================================================== -->
+
+  <section
+    id="werknemersPaneel"
+    class="verborgen"
+  >
+
+    <div class="paneel">
+
+      <h2>👷 Werknemerspaneel</h2>
+
+      <p>
+        Hier maak en bewaar je de show.
+      </p>
+
+      <p>
+        De LEGO-hub wordt hier bewust niet verbonden.
+        De bezoeker doet dat zelf.
+      </p>
+
+      <button
+        id="terugKnop"
+        class="grote-knop grijs"
+      >
+        ← Naar bezoekerspaneel
+      </button>
+
+    </div>
+
+
+    <!-- MUZIEK -->
+
+    <div class="paneel">
+
+      <h2>🎵 Muziek</h2>
+
+      <label>
+        Kies de MP3
+      </label>
+
+      <input
+        id="mp3Bestand"
+        type="file"
+        accept=".mp3,audio/mpeg"
+      >
+
+      <div
+        id="muziekStatus"
+        class="status"
+      >
+        Nog geen MP3 gekozen.
+      </div>
+
+      <button
+        id="uploadMuziekKnop"
+        class="grote-knop blauw"
+      >
+        ☁️ MP3 ONLINE OPSLAAN
+      </button>
+
+    </div>
+
+
+    <!-- SHOW BOUWEN -->
+
+    <div class="paneel">
+
+      <h2>🧱 Show bouwen</h2>
+
+      <div class="uitleg">
+        De show begint automatisch met START.
+        Daarna voer je blokken uit, bijvoorbeeld:
+
+        <br><br>
+
+        ▶️ START SHOW<br>
+        ↓<br>
+        ⏱️ Wacht 10 seconden<br>
+        ↓<br>
+        ⚙️ Motor A snelheid 8<br>
+        ↓<br>
+        ⏱️ Wacht 20 seconden<br>
+        ↓<br>
+        ⚙️ Motor A snelheid 30<br>
+        ↓<br>
+        ⏱️ Wacht 3 seconden<br>
+        ↓<br>
+        🛑 Stop motor A<br>
+        ↓<br>
+        🏁 EINDE SHOW
+      </div>
+
+      <div id="blokLijst" class="blok-lijst"></div>
+
+
+      <div class="toevoegen">
+
+        <h3>Blok toevoegen</h3>
+
+        <label>
+          Kies een blok
+        </label>
+
+        <select id="nieuwBlokType">
+
+          <option value="wait">
+            ⏱️ Wacht
+          </option>
+
+          <option value="motor">
+            ⚙️ Zet motor
+          </option>
+
+          <option value="stop">
+            🛑 Stop motor
+          </option>
+
+        </select>
+
+        <div id="blokOpties"></div>
+
+        <button
+          id="blokToevoegenKnop"
+          class="grote-knop blauw"
+        >
+          ➕ BLOK TOEVOEGEN
+        </button>
+
+      </div>
+
+
+      <button
+        id="showOpslaanKnop"
+        class="grote-knop groen"
+      >
+        💾 SHOW ONLINE OPSLAAN
+      </button>
+
+      <div
+        id="werknemerStatus"
+        class="status"
+      >
+        Nog niets opgeslagen.
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<!-- =====================================================
+     WERKNEMER LOGIN
+     ===================================================== -->
+
+<div
+  id="codeModal"
+  class="modal"
+>
+
+  <div class="modal-inhoud">
+
+    <h2>🔐 Werknemer</h2>
+
+    <p>
+      Voer de werknemerscode in.
+    </p>
+
+    <input
+      id="codeInput"
+      type="password"
+      inputmode="numeric"
+      placeholder="Werknemerscode"
+    >
+
+    <button
+      id="codeOkKnop"
+      class="grote-knop blauw"
+    >
+      INLOGGEN
+    </button>
+
+    <button
+      id="codeAnnulerenKnop"
+      class="grote-knop grijs"
+    >
+      ANNULEREN
+    </button>
+
+    <div
+      id="codeStatus"
+      class="status"
+    ></div>
 
   </div>
 
-  <script>
-    const verbindenKnop = document.getElementById("verbindenKnop");
-    const motorKnop = document.getElementById("motorKnop");
-    const stopKnop = document.getElementById("stopKnop");
-    const status = document.getElementById("status");
-
-    // Officiële LEGO Powered Up Bluetooth-services
-    const LPF2_HUB_SERVICE =
-      "00001623-1212-efde-1623-785feabcd123";
-
-    const LPF2_HUB_CHARACTERISTIC =
-      "00001624-1212-efde-1623-785feabcd123";
-
-    let apparaat = null;
-    let karakteristiek = null;
-
-    // -----------------------------------------
-    // VERBINDEN
-    // -----------------------------------------
-
-    verbindenKnop.addEventListener("click", async () => {
-
-      try {
-
-        status.textContent =
-          "🔎 LEGO Powered Up zoeken...";
-
-        apparaat = await navigator.bluetooth.requestDevice({
-          filters: [
-            {
-              services: [LPF2_HUB_SERVICE]
-            }
-          ],
-          optionalServices: [
-            LPF2_HUB_SERVICE
-          ]
-        });
-
-        status.innerHTML =
-          "✅ Hub gevonden:<br>" +
-          (apparaat.name || "Onbekende hub") +
-          "<br><br>🔌 Verbinden...";
-
-        const server = await apparaat.gatt.connect();
-
-        const service =
-          await server.getPrimaryService(LPF2_HUB_SERVICE);
-
-        karakteristiek =
-          await service.getCharacteristic(LPF2_HUB_CHARACTERISTIC);
-
-        status.innerHTML =
-          "🟢 <b>LEGO VERBONDEN!</b><br><br>" +
-          "Hub: " +
-          (apparaat.name || "Onbekend") +
-          "<br><br>" +
-          "Motor op poort A kan nu getest worden.";
-
-        motorKnop.disabled = false;
-        stopKnop.disabled = false;
-        verbindenKnop.disabled = true;
-
-      } catch (fout) {
-
-        console.error(fout);
-
-        status.innerHTML =
-          "❌ Verbinden mislukt.<br><br>" +
-          "<b>" +
-          (fout.message || fout.name || "Onbekende fout") +
-          "</b>";
-      }
-
-    });
+</div>
 
 
-    // -----------------------------------------
-    // MOTORCOMMANDO
-    // -----------------------------------------
+<script type="module">
 
-    async function motor(power) {
+/* =========================================================
+   1. SUPABASE
+   ========================================================= */
 
-      if (!karakteristiek) {
-        status.textContent =
-          "⚠️ Verbind eerst met de LEGO-hub.";
-        return;
-      }
+const SUPABASE_URL =
+  "https://vdjnulaseklleowhqirs.supabase.co";
 
-      /*
-        Powered Up:
-        poort A = 0x00
-        0x81 = output command
-        0x11 = direct uitvoeren + feedback
-        0x51 = WriteDirectModeData
-        0x00 = motor power mode
-        power = -100 t/m 100
+const SUPABASE_KEY =
+  "sb_publishable_EakyLh39e5voxROd4CM-FA_mcqg3_j0";
 
-        0 = vrij laten draaien
-        127 = remmen
-      */
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-      const pakket = new Uint8Array([
-        0x08,
-        0x00,
-        0x81,
-        0x00,
-        0x11,
-        0x51,
-        0x00,
-        power < 0 ? 256 + power : power
-      ]);
 
-      try {
+/* =========================================================
+   2. WERKNEMERSCODE
+   ========================================================= */
 
-        if (
-          karakteristiek.properties.writeWithoutResponse
-        ) {
-          await karakteristiek.writeValueWithoutResponse(pakket);
-        } else {
-          await karakteristiek.writeValue(pakket);
-        }
+const WERKNEMER_CODE = "1234";
 
-      } catch (fout) {
 
-        console.error(fout);
+/* =========================================================
+   3. LEGO BLUETOOTH
+   ========================================================= */
 
-        status.innerHTML =
-          "❌ Motoropdracht mislukt.<br><br>" +
-          (fout.message || fout.name || "Onbekende fout");
-      }
+const HUB_SERVICE =
+  "00001623-1212-efde-1623-785feabcd123";
+
+const HUB_CHARACTERISTIC =
+  "00001624-1212-efde-1623-785feabcd123";
+
+
+/* =========================================================
+   4. MOTORPOORTEN
+   ========================================================= */
+
+const PORTS = {
+  A: 0x00,
+  B: 0x01,
+  C: 0x02,
+  D: 0x03
+};
+
+
+/* =========================================================
+   5. SHOW
+   ========================================================= */
+
+const SHOW_ID = "danse-macabre";
+
+let show = {
+  id: SHOW_ID,
+  name: "Danse Macabre",
+  music_url: null,
+  music_name: null,
+  blocks: []
+};
+
+
+/* =========================================================
+   6. VARIABELEN
+   ========================================================= */
+
+let gekozenMP3 = null;
+
+let legoDevice = null;
+
+let legoCharacteristic = null;
+
+let showTimers = [];
+
+let showBezig = false;
+
+
+/* =========================================================
+   7. ELEMENTEN
+   ========================================================= */
+
+const bezoekersPaneel =
+  document.getElementById("bezoekersPaneel");
+
+const werknemersPaneel =
+  document.getElementById("werknemersPaneel");
+
+const werknemerKnop =
+  document.getElementById("werknemerKnop");
+
+const terugKnop =
+  document.getElementById("terugKnop");
+
+const codeModal =
+  document.getElementById("codeModal");
+
+const codeInput =
+  document.getElementById("codeInput");
+
+const codeOkKnop =
+  document.getElementById("codeOkKnop");
+
+const codeAnnulerenKnop =
+  document.getElementById("codeAnnulerenKnop");
+
+const codeStatus =
+  document.getElementById("codeStatus");
+
+const verbindenKnop =
+  document.getElementById("verbindenKnop");
+
+const startShowKnop =
+  document.getElementById("startShowKnop");
+
+const stopShowKnop =
+  document.getElementById("stopShowKnop");
+
+const bezoekerStatus =
+  document.getElementById("bezoekerStatus");
+
+const showInfo =
+  document.getElementById("showInfo");
+
+const mp3Bestand =
+  document.getElementById("mp3Bestand");
+
+const muziekStatus =
+  document.getElementById("muziekStatus");
+
+const uploadMuziekKnop =
+  document.getElementById("uploadMuziekKnop");
+
+const blokLijst =
+  document.getElementById("blokLijst");
+
+const nieuwBlokType =
+  document.getElementById("nieuwBlokType");
+
+const blokOpties =
+  document.getElementById("blokOpties");
+
+const blokToevoegenKnop =
+  document.getElementById("blokToevoegenKnop");
+
+const showOpslaanKnop =
+  document.getElementById("showOpslaanKnop");
+
+const werknemerStatus =
+  document.getElementById("werknemerStatus");
+
+
+/* =========================================================
+   8. WERKNEMER OPENEN
+   ========================================================= */
+
+werknemerKnop.addEventListener("click", () => {
+
+  codeInput.value = "";
+
+  codeStatus.textContent = "";
+
+  codeModal.style.display = "flex";
+
+  codeInput.focus();
+
+});
+
+
+/* =========================================================
+   9. WERKNEMER LOGIN
+   ========================================================= */
+
+codeOkKnop.addEventListener("click", () => {
+
+  if (codeInput.value === WERKNEMER_CODE) {
+
+    codeModal.style.display = "none";
+
+    bezoekersPaneel
+      .classList
+      .add("verborgen");
+
+    werknemersPaneel
+      .classList
+      .remove("verborgen");
+
+    renderBlokken();
+
+    updateBlokOpties();
+
+  } else {
+
+    codeStatus.textContent =
+      "❌ Verkeerde code.";
+
+  }
+
+});
+
+
+/* =========================================================
+   10. LOGIN SLUITEN
+   ========================================================= */
+
+codeAnnulerenKnop.addEventListener(
+  "click",
+  () => {
+
+    codeModal.style.display = "none";
+
+  }
+);
+
+
+/* =========================================================
+   11. TERUG NAAR BEZOEKER
+   ========================================================= */
+
+terugKnop.addEventListener("click", () => {
+
+  werknemersPaneel
+    .classList
+    .add("verborgen");
+
+  bezoekersPaneel
+    .classList
+    .remove("verborgen");
+
+});
+
+
+/* =========================================================
+   12. NIEUW BLOK OPTIES
+   ========================================================= */
+
+function updateBlokOpties() {
+
+  const type =
+    nieuwBlokType.value;
+
+
+  if (type === "wait") {
+
+    blokOpties.innerHTML = `
+      <label>
+        Hoeveel seconden wachten?
+      </label>
+
+      <input
+        id="waitSeconds"
+        type="number"
+        min="0"
+        step="0.1"
+        value="1"
+      >
+    `;
+
+  }
+
+
+  else if (type === "motor") {
+
+    blokOpties.innerHTML = `
+
+      <div class="rij">
+
+        <div>
+
+          <label>
+            Motor
+          </label>
+
+          <select id="motorPort">
+
+            <option value="A">Motor A</option>
+            <option value="B">Motor B</option>
+            <option value="C">Motor C</option>
+            <option value="D">Motor D</option>
+
+          </select>
+
+        </div>
+
+        <div>
+
+          <label>
+            Snelheid
+          </label>
+
+          <input
+            id="motorSpeed"
+            type="number"
+            min="-100"
+            max="100"
+            value="20"
+          >
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  else if (type === "stop") {
+
+    blokOpties.innerHTML = `
+
+      <label>
+        Welke motor stoppen?
+      </label>
+
+      <select id="stopPort">
+
+        <option value="A">Motor A</option>
+        <option value="B">Motor B</option>
+        <option value="C">Motor C</option>
+        <option value="D">Motor D</option>
+
+      </select>
+
+    `;
+
+  }
+
+}
+
+
+nieuwBlokType.addEventListener(
+  "change",
+  updateBlokOpties
+);
+
+
+/* =========================================================
+   13. BLOK TOEVOEGEN
+   ========================================================= */
+
+blokToevoegenKnop.addEventListener(
+  "click",
+  () => {
+
+    const type =
+      nieuwBlokType.value;
+
+
+    if (type === "wait") {
+
+      const seconds =
+        Number(
+          document.getElementById(
+            "waitSeconds"
+          ).value
+        );
+
+      show.blocks.push({
+        type: "wait",
+        seconds: Math.max(0, seconds)
+      });
+
     }
 
 
-    // -----------------------------------------
-    // TEST MOTOR
-    // -----------------------------------------
+    else if (type === "motor") {
 
-    motorKnop.addEventListener("click", async () => {
+      const port =
+        document.getElementById(
+          "motorPort"
+        ).value;
 
-      status.textContent =
-        "⚙️ Motor A draait 1 seconde...";
+      const speed =
+        Number(
+          document.getElementById(
+            "motorSpeed"
+          ).value
+        );
 
-      await motor(20);
+      show.blocks.push({
+        type: "motor",
+        port: port,
+        speed:
+          Math.max(
+            -100,
+            Math.min(100, speed)
+          )
+      });
 
-      setTimeout(async () => {
-
-        await motor(127);
-
-        status.textContent =
-          "✅ Motor A heeft 1 seconde gedraaid en is gestopt.";
-
-      }, 1000);
-
-    });
+    }
 
 
-    // -----------------------------------------
-    // STOP
-    // -----------------------------------------
+    else if (type === "stop") {
 
-    stopKnop.addEventListener("click", async () => {
+      const port =
+        document.getElementById(
+          "stopPort"
+        ).value;
 
-      await motor(127);
+      show.blocks.push({
+        type: "stop",
+        port: port
+      });
 
-      status.textContent =
-        "🛑 Motor A gestopt.";
-    });
+    }
 
-  </script>
+
+    renderBlokken();
+
+  }
+);
+
+
+/* =========================================================
+   14. BLOKKEN WEERGEVEN
+   ========================================================= */
+
+function renderBlokken() {
+
+  blokLijst.innerHTML = "";
+
+
+  const start =
+    document.createElement("div");
+
+  start.className =
+    "blok start";
+
+  start.innerHTML = `
+    <div class="blok-titel">
+      ▶️ START SHOW
+    </div>
+
+    <div class="blok-info">
+      Muziek en show beginnen hier.
+    </div>
+  `;
+
+  blokLijst.appendChild(start);
+
+
+  show.blocks.forEach(
+    (blok, index) => {
+
+      const div =
+        document.createElement("div");
+
+      div.className =
+        "blok " + blok.type;
+
+
+      let tekst = "";
+
+
+      if (blok.type === "wait") {
+
+        tekst =
+          `⏱️ Wacht ${blok.seconds} seconden`;
+
+      }
+
+
+      if (blok.type === "motor") {
+
+        tekst =
+          `⚙️ Motor ${blok.port} → snelheid ${blok.speed}`;
+
+      }
+
+
+      if (blok.type === "stop") {
+
+        tekst =
+          `🛑 Stop motor ${blok.port}`;
+
+      }
+
+
+      div.innerHTML = `
+
+        <div class="blok-titel">
+          ${tekst}
+        </div>
+
+        <div class="blok-knoppen">
+
+          <button
+            data-action="up"
+            data-index="${index}"
+          >
+            ⬆️
+          </button>
+
+          <button
+            data-action="down"
+            data-index="${index}"
+          >
+            ⬇️
+          </button>
+
+          <button
+            data-action="delete"
+            data-index="${index}"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      `;
+
+      blokLijst.appendChild(div);
+
+    }
+  );
+
+
+  const einde =
+    document.createElement("div");
+
+  einde.className =
+    "blok einde";
+
+  einde.innerHTML = `
+    <div class="blok-titel">
+      🏁 EINDE SHOW
+    </div>
+
+    <div class="blok-info">
+      Alle motoren stoppen.
+    </div>
+  `;
+
+  blokLijst.appendChild(einde);
+
+}
+
+
+blokLijst.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest("button");
+
+    if (!button) {
+      return;
+    }
+
+
+    const index =
+      Number(button.dataset.index);
+
+    const action =
+      button.dataset.action;
+
+
+    if (action === "delete") {
+
+      show.blocks.splice(
+        index,
+        1
+      );
+
+    }
+
+
+    if (action === "up" && index > 0) {
+
+      [
+        show.blocks[index - 1],
+        show.blocks[index]
+      ] = [
+        show.blocks[index],
+        show.blocks[index - 1]
+      ];
+
+    }
+
+
+    if (
+      action === "down" &&
+      index < show.blocks.length - 1
+    ) {
+
+      [
+        show.blocks[index],
+        show.blocks[index + 1]
+      ] = [
+        show.blocks[index + 1],
+        show.blocks[index]
+      ];
+
+    }
+
+
+    renderBlokken();
+
+  }
+);
+
+
+/* =========================================================
+   15. MP3 KIEZEN
+   ========================================================= */
+
+mp3Bestand.addEventListener(
+  "change",
+  () => {
+
+    gekozenMP3 =
+      mp3Bestand.files[0] || null;
+
+
+    if (!gekozenMP3) {
+
+      muziekStatus.textContent =
+        "Nog geen MP3 gekozen.";
+
+      return;
+    }
+
+
+    muziekStatus.textContent =
+      "✅ Gekozen: " +
+      gekozenMP3.name;
+
+  }
+);
+
+
+/* =========================================================
+   16. MP3 UPLOADEN
+   ========================================================= */
+
+uploadMuziekKnop.addEventListener(
+  "click",
+  async () => {
+
+    if (!gekozenMP3) {
+
+      muziekStatus.textContent =
+        "⚠️ Kies eerst een MP3.";
+
+      return;
+    }
+
+
+    try {
+
+      muziekStatus.textContent =
+        "☁️ MP3 uploaden...";
+
+
+      const veiligeNaam =
+        gekozenMP3.name
+          .replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+          );
+
+
+      const pad =
+        "shows/" +
+        Date.now() +
+        "-" +
+        veiligeNaam;
+
+
+      const result =
+        await supabaseClient
+          .storage
+          .from("music")
+          .upload(
+            pad,
+            gekozenMP3,
+            {
+              contentType:
+                gekozenMP3.type ||
+                "audio/mpeg",
+              upsert: false
+            }
+          );
+
+
+      if (result.error) {
+        throw result.error;
+      }
+
+
+      const publicUrl =
+        supabaseClient
+          .storage
+          .from("music")
+          .getPublicUrl(pad)
+          .data
+          .publicUrl;
+
+
+      show.music_url =
+        publicUrl;
+
+      show.music_name =
+        gekozenMP3.name;
+
+
+      muziekStatus.textContent =
+        "✅ MP3 staat online.";
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      muziekStatus.textContent =
+        "❌ Upload mislukt: " +
+        error.message;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   17. SHOW OPSLAAN
+   ========================================================= */
+
+showOpslaanKnop.addEventListener(
+  "click",
+  async () => {
+
+    try {
+
+      werknemerStatus.textContent =
+        "☁️ Show opslaan...";
+
+
+      const result =
+        await supabaseClient
+          .from("shows")
+          .upsert(
+            {
+              show_key: SHOW_ID,
+              name: "Danse Macabre",
+              music_url:
+                show.music_url,
+              music_name:
+                show.music_name,
+              blocks:
+                show.blocks,
+              updated_at:
+                new Date().toISOString()
+            },
+            {
+              onConflict:
+                "show_key"
+            }
+          );
+
+
+      if (result.error) {
+        throw result.error;
+      }
+
+
+      werknemerStatus.textContent =
+        "✅ Show online opgeslagen!";
+
+
+      await laadShow();
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      werknemerStatus.textContent =
+        "❌ Opslaan mislukt: " +
+        error.message;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   18. SHOW LADEN
+   ========================================================= */
+
+async function laadShow() {
+
+  try {
+
+    const result =
+      await supabaseClient
+        .from("shows")
+        .select("*")
+        .eq(
+          "show_key",
+          SHOW_ID
+        )
+        .single();
+
+
+    if (result.error) {
+      throw result.error;
+    }
+
+
+    if (result.data) {
+
+      show = {
+        id: SHOW_ID,
+        name:
+          result.data.name ||
+          "Danse Macabre",
+
+        music_url:
+          result.data.music_url,
+
+        music_name:
+          result.data.music_name,
+
+        blocks:
+          Array.isArray(
+            result.data.blocks
+          )
+            ? result.data.blocks
+            : []
+      };
+
+
+      renderBlokken();
+
+      renderShowInfo();
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    showInfo.textContent =
+      "❌ Show laden mislukt: " +
+      error.message;
+
+  }
+
+}
+
+
+/* =========================================================
+   19. SHOWINFO
+   ========================================================= */
+
+function renderShowInfo() {
+
+  showInfo.innerHTML = `
+
+    <strong>
+      ${show.name}
+    </strong>
+
+    <br><br>
+
+    🎵 Muziek:
+    ${
+      show.music_name ||
+      "Nog geen muziek"
+    }
+
+    <br>
+
+    🧱 Aantal blokken:
+    ${show.blocks.length}
+
+  `;
+
+}
+
+
+/* =========================================================
+   20. LEGO VERBINDEN
+   ========================================================= */
+
+verbindenKnop.addEventListener(
+  "click",
+  async () => {
+
+    if (!navigator.bluetooth) {
+
+      bezoekerStatus.textContent =
+        "❌ Bluetooth wordt niet ondersteund.";
+
+      return;
+    }
+
+
+    try {
+
+      bezoekerStatus.textContent =
+        "🔎 LEGO Powered Up zoeken...";
+
+
+      legoDevice =
+        await navigator.bluetooth
+          .requestDevice({
+            filters: [
+              {
+                services: [
+                  HUB_SERVICE
+                ]
+              }
+            ],
+
+            optionalServices: [
+              HUB_SERVICE
+            ]
+          });
+
+
+      bezoekerStatus.innerHTML =
+        "✅ Hub gevonden:<br>" +
+        (
+          legoDevice.name ||
+          "Onbekend"
+        ) +
+        "<br><br>🔌 Verbinden...";
+
+
+      const server =
+        await legoDevice.gatt.connect();
+
+
+      const service =
+        await server
+          .getPrimaryService(
+            HUB_SERVICE
+          );
+
+
+      legoCharacteristic =
+        await service
+          .getCharacteristic(
+            HUB_CHARACTERISTIC
+          );
+
+
+      bezoekerStatus.innerHTML =
+        "🟢 <strong>LEGO VERBONDEN!</strong><br><br>" +
+        "Hub: " +
+        (
+          legoDevice.name ||
+          "Onbekend"
+        ) +
+        "<br><br>" +
+        "Klaar om de show te starten.";
+
+
+      verbindenKnop.disabled = true;
+
+      startShowKnop.disabled =
+        false;
+
+      stopShowKnop.disabled =
+        false;
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      bezoekerStatus.innerHTML =
+        "❌ Verbinden mislukt:<br><br>" +
+        error.message;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   21. MOTOR AAN
+   ========================================================= */
+
+async function motorAan(
+  port,
+  speed
+) {
+
+  if (!legoCharacteristic) {
+
+    throw new Error(
+      "LEGO-hub is niet verbonden."
+    );
+
+  }
+
+
+  const portByte =
+    PORTS[port];
+
+
+  let power =
+    Math.round(speed);
+
+
+  power =
+    Math.max(
+      -100,
+      Math.min(
+        100,
+        power
+      )
+    );
+
+
+  const powerByte =
+    power < 0
+      ? 256 + power
+      : power;
+
+
+  const pakket =
+    new Uint8Array([
+      0x08,
+      0x00,
+      0x81,
+      portByte,
+      0x11,
+      0x51,
+      0x00,
+      powerByte
+    ]);
+
+
+  if (
+    legoCharacteristic
+      .properties
+      .writeWithoutResponse
+  ) {
+
+    await legoCharacteristic
+      .writeValueWithoutResponse(
+        pakket
+      );
+
+  }
+
+  else {
+
+    await legoCharacteristic
+      .writeValue(
+        pakket
+      );
+
+  }
+
+}
+
+
+/* =========================================================
+   22. MOTOR STOPPEN
+   ========================================================= */
+
+async function motorStop(
+  port
+) {
+
+  await motorAan(
+    port,
+    0
+  );
+
+}
+
+
+/* =========================================================
+   23. ALLES STOPPEN
+   ========================================================= */
+
+async function allesStoppen() {
+
+  if (!legoCharacteristic) {
+    return;
+  }
+
+
+  for (
+    const port of [
+      "A",
+      "B",
+      "C",
+      "D"
+    ]
+  ) {
+
+    try {
+
+      await motorStop(
+        port
+      );
+
+    }
+
+    catch (error) {
+
+      console.warn(
+        "Motor " +
+        port +
+        " kon niet stoppen.",
+        error
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   24. SHOW STARTEN
+   ========================================================= */
+
+startShowKnop.addEventListener(
+  "click",
+  async () => {
+
+    if (showBezig) {
+      return;
+    }
+
+
+    if (!legoCharacteristic) {
+
+      bezoekerStatus.textContent =
+        "⚠️ Verbind eerst met LEGO.";
+
+      return;
+
+    }
+
+
+    if (!show.music_url) {
+
+      bezoekerStatus.textContent =
+        "⚠️ Er is nog geen MP3 aan de show gekoppeld.";
+
+      return;
+
+    }
+
+
+    showBezig = true;
+
+
+    startShowKnop.disabled = true;
+
+    verbindenKnop.disabled = true;
+
+
+    showTimers.forEach(
+      timer =>
+        clearTimeout(timer)
+    );
+
+    showTimers = [];
+
+
+    try {
+
+      await allesStoppen();
+
+
+      /*
+       * Muziek laden
+       */
+
+      const muziek =
+        new Audio(
+          show.music_url
+        );
+
+
+      muziek.preload =
+        "auto";
+
+
+      /*
+       * Alles begint op dezelfde
+       * geplande starttijd.
+       */
+
+      const startTijd =
+        performance.now() + 700;
+
+
+      const muziekTimer =
+        setTimeout(
+          () => {
+
+            muziek.currentTime =
+              0;
+
+            muziek.play()
+              .catch(
+                error =>
+                  console.error(
+                    "Muziekfout:",
+                    error
+                  )
+              );
+
+          },
+
+          Math.max(
+            0,
+            startTijd -
+            performance.now()
+          )
+
+        );
+
+
+      showTimers.push(
+        muziekTimer
+      );
+
+
+      /*
+       * Tijdlijn van de blokken
+       */
+
+      let tijd =
+        0;
+
+
+      for (
+        const blok of show.blocks
+      ) {
+
+
+        if (
+          blok.type === "wait"
+        ) {
+
+          tijd +=
+            Number(
+              blok.seconds
+            ) *
+            1000;
+
+          continue;
+        }
+
+
+        if (
+          blok.type === "motor"
+        ) {
+
+          const actieTijd =
+            startTijd +
+            tijd -
+            performance.now();
+
+
+          const timer =
+            setTimeout(
+              async () => {
+
+                try {
+
+                  await motorAan(
+                    blok.port,
+                    blok.speed
+                  );
+
+                }
+
+                catch (error) {
+
+                  console.error(
+                    error
+                  );
+
+                }
+
+              },
+
+              Math.max(
+                0,
+                actieTijd
+              )
+
+            );
+
+
+          showTimers.push(
+            timer
+          );
+
+          continue;
+        }
+
+
+        if (
+          blok.type === "stop"
+        ) {
+
+          const actieTijd =
+            startTijd +
+            tijd -
+            performance.now();
+
+
+          const timer =
+            setTimeout(
+              async () => {
+
+                try {
+
+                  await motorStop(
+                    blok.port
+                  );
+
+                }
+
+                catch (error) {
+
+                  console.error(
+                    error
+                  );
+
+                }
+
+              },
+
+              Math.max(
+                0,
+                actieTijd
+              )
+
+            );
+
+
+          showTimers.push(
+            timer
+          );
+
+        }
+
+      }
+
+
+      /*
+       * Einde
+       */
+
+      const eindeTimer =
+        setTimeout(
+          async () => {
+
+            await allesStoppen();
+
+            showBezig = false;
+
+            startShowKnop.disabled =
+              false;
+
+            verbindenKnop.disabled =
+              false;
+
+            bezoekerStatus.textContent =
+              "✅ Show afgelopen.";
+
+          },
+
+          Math.max(
+            0,
+            startTijd +
+            tijd +
+            500 -
+            performance.now()
+          )
+
+        );
+
+
+      showTimers.push(
+        eindeTimer
+      );
+
+
+      bezoekerStatus.textContent =
+        "🎭 SHOW GESTART!";
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      showBezig = false;
+
+      startShowKnop.disabled =
+        false;
+
+      verbindenKnop.disabled =
+        false;
+
+      bezoekerStatus.textContent =
+        "❌ Showfout: " +
+        error.message;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   25. SHOW STOPPEN
+   ========================================================= */
+
+stopShowKnop.addEventListener(
+  "click",
+  async () => {
+
+    showTimers.forEach(
+      timer =>
+        clearTimeout(timer)
+    );
+
+    showTimers = [];
+
+
+    await allesStoppen();
+
+
+    showBezig = false;
+
+
+    startShowKnop.disabled =
+      false;
+
+    verbindenKnop.disabled =
+      false;
+
+
+    bezoekerStatus.textContent =
+      "🛑 Show gestopt.";
+
+  }
+);
+
+
+/* =========================================================
+   26. START
+   ========================================================= */
+
+await laadShow();
+
+updateBlokOpties();
+
+</script>
 
 </body>
 </html>
