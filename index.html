@@ -520,7 +520,7 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
-const WERKNEMER_CODE = "1234";
+const WERKNEMER_CODE = "Citroen2";
 
 const HUB_SERVICE =
   "00001623-1212-efde-1623-785feabcd123";
@@ -1419,6 +1419,34 @@ async function motorStop(
 }
 
 
+/* BLUETOOTH VERBINDING VERBREKEN */
+
+function bluetoothVerbreken() {
+
+  try {
+
+    if (legoDevice && legoDevice.gatt && legoDevice.gatt.connected) {
+      legoDevice.gatt.disconnect();
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Bluetooth automatisch verbreken mislukt:",
+      error
+    );
+
+  }
+
+  legoCharacteristic = null;
+  legoDevice = null;
+
+  verbindenKnop.disabled = false;
+  startShowKnop.disabled = true;
+
+}
+
+
 /* ALLES STOPPEN */
 
 async function allesStoppen() {
@@ -1649,13 +1677,13 @@ startShowKnop.addEventListener(
 
             await allesStoppen();
 
+            // Na de show de Bluetooth-verbinding automatisch verbreken.
+            bluetoothVerbreken();
+
             showBezig = false;
 
-            startShowKnop.disabled = false;
-            verbindenKnop.disabled = false;
-
             bezoekerStatus.textContent =
-              "✅ Show afgelopen.";
+              "✅ Show afgelopen. LEGO is automatisch losgekoppeld.";
 
           },
           Math.max(
