@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eftelblox LEGO Test</title>
 
-  <title>Eftelblox - LEGO</title>
-
-  <!-- Node-PoweredUp voor LEGO Powered Up -->
-  <script src="https://cdn.jsdelivr.net/npm/node-poweredup@10.0.0/dist/browser/poweredup.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/node-poweredup@latest/dist/browser/poweredup.js"></script>
 
   <style>
     body {
@@ -16,7 +14,6 @@
       background: #151515;
       color: white;
       font-family: Arial, sans-serif;
-
       display: flex;
       justify-content: center;
       align-items: center;
@@ -32,26 +29,16 @@
       font-size: 38px;
     }
 
-    h2 {
-      font-size: 24px;
-    }
-
     button {
       width: 100%;
-      padding: 22px;
-      margin-top: 15px;
+      padding: 24px;
+      margin-top: 20px;
       border: none;
       border-radius: 18px;
       font-size: 22px;
       font-weight: bold;
       color: white;
       background: #2563eb;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
     }
 
     #status {
@@ -70,82 +57,62 @@
 
     <h1>🎢 Eftelblox</h1>
 
-    <h2>Danse Macabre</h2>
+    <h2>LEGO Bluetooth-test</h2>
 
-    <button id="verbindenKnop">
+    <button id="verbinden">
       🔗 VERBIND MET LEGO
     </button>
 
     <div id="status">
-      Nog niet verbonden.
+      Klaar.
     </div>
 
   </div>
 
   <script>
-    const verbindenKnop = document.getElementById("verbindenKnop");
     const status = document.getElementById("status");
+    const knop = document.getElementById("verbinden");
+
+    if (!PoweredUP.isWebBluetooth) {
+      status.textContent =
+        "❌ Web Bluetooth wordt niet ondersteund.";
+    }
 
     const poweredUP = new PoweredUP.PoweredUP();
 
-    let hub = null;
-
-    // Controleer of de browser Web Bluetooth ondersteunt
-    if (!PoweredUP.isWebBluetooth) {
-      status.textContent =
-        "❌ Deze browser ondersteunt Web Bluetooth niet.";
-    }
-
-    // Wanneer PoweredUp een hub vindt
-    poweredUP.on("discover", async function(nieuweHub) {
-
+    poweredUP.on("discover", async (hub) => {
       try {
-        hub = nieuweHub;
-
-        status.textContent =
-          "✅ Hub gevonden: " +
-          (hub.name || "Onbekende hub") +
+        status.innerHTML =
+          "✅ LEGO gevonden!<br><br>" +
+          "Hub: " + (hub.name || "Onbekend") +
           "<br><br>🔌 Verbinden...";
 
         await hub.connect();
 
         status.innerHTML =
           "🟢 <b>VERBONDEN MET LEGO!</b><br><br>" +
-          "Hub: " +
-          (hub.name || "Onbekende hub");
-
-        verbindenKnop.disabled = true;
+          "Hub: " + (hub.name || "Onbekend");
 
       } catch (error) {
-
-        console.error(error);
-
         status.innerHTML =
           "❌ Verbinden mislukt.<br><br>" +
-          (error.message || error.name || "Onbekende fout");
+          (error.message || error.name);
+        console.error(error);
       }
-
     });
 
-    // Start zoeken naar LEGO Powered Up-hubs
-    verbindenKnop.addEventListener("click", function() {
-
+    knop.addEventListener("click", () => {
       try {
-
         status.textContent =
-          "🔎 LEGO Powered Up-hub zoeken...";
+          "🔎 Bluetooth-keuzescherm openen...";
 
         poweredUP.scan();
-
       } catch (error) {
-
-        console.error(error);
-
         status.innerHTML =
-          "❌ Zoeken mislukt.<br><br>" +
-          (error.message || error.name || "Onbekende fout");
+          "❌ Fout bij zoeken:<br><br>" +
+          (error.message || error.name);
+        console.error(error);
       }
-
     });
   </script>
 
