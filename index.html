@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox - LEGO Motortest</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/node-poweredup@latest/dist/browser/poweredup.js"></script>
+  <title>Eftelblox - LEGO Motortest</title>
 
   <style>
     body {
@@ -14,6 +13,7 @@
       background: #151515;
       color: white;
       font-family: Arial, sans-serif;
+
       display: flex;
       justify-content: center;
       align-items: center;
@@ -26,36 +26,36 @@
     }
 
     h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
+      font-size: 38px;
+      margin-bottom: 8px;
     }
 
     h2 {
-      font-size: 22px;
+      font-size: 23px;
       margin-bottom: 25px;
     }
 
     button {
       width: 100%;
       padding: 22px;
-      margin-top: 15px;
+      margin-top: 14px;
       border: none;
       border-radius: 18px;
-      font-size: 21px;
+      font-size: 22px;
       font-weight: bold;
       color: white;
       cursor: pointer;
     }
 
-    #verbinden {
+    #verbindenKnop {
       background: #2563eb;
     }
 
-    #motor {
+    #motorKnop {
       background: #16a34a;
     }
 
-    #stop {
+    #stopKnop {
       background: #dc2626;
     }
 
@@ -65,11 +65,12 @@
     }
 
     #status {
-      margin-top: 20px;
+      margin-top: 22px;
       padding: 18px;
       background: #222;
       border-radius: 12px;
-      line-height: 1.5;
+      line-height: 1.6;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -79,17 +80,18 @@
   <div class="pagina">
 
     <h1>🎢 Eftelblox</h1>
-    <h2>Danse Macabre</h2>
 
-    <button id="verbinden">
+    <h2>LEGO Motor Test</h2>
+
+    <button id="verbindenKnop">
       🔗 VERBIND MET LEGO
     </button>
 
-    <button id="motor" disabled>
+    <button id="motorKnop" disabled>
       ⚙️ TEST MOTOR A
     </button>
 
-    <button id="stop" disabled>
+    <button id="stopKnop" disabled>
       🛑 STOP MOTOR
     </button>
 
@@ -100,122 +102,173 @@
   </div>
 
   <script>
+    const verbindenKnop = document.getElementById("verbindenKnop");
+    const motorKnop = document.getElementById("motorKnop");
+    const stopKnop = document.getElementById("stopKnop");
     const status = document.getElementById("status");
-    const verbinden = document.getElementById("verbinden");
-    const motorKnop = document.getElementById("motor");
-    const stopKnop = document.getElementById("stop");
 
-    const poweredUP = new PoweredUP.PoweredUP();
+    // Officiële LEGO Powered Up Bluetooth-services
+    const LPF2_HUB_SERVICE =
+      "00001623-1212-efde-1623-785feabcd123";
 
-    let gekozenHub = null;
-    let motorA = null;
+    const LPF2_HUB_CHARACTERISTIC =
+      "00001624-1212-efde-1623-785feabcd123";
 
-    // Controleer Web Bluetooth
-    if (!PoweredUP.isWebBluetooth) {
-      status.textContent =
-        "❌ Web Bluetooth wordt niet ondersteund.";
-    }
+    let apparaat = null;
+    let karakteristiek = null;
 
-    // Wanneer een hub wordt gevonden
-    poweredUP.on("discover", async (hub) => {
+    // -----------------------------------------
+    // VERBINDEN
+    // -----------------------------------------
+
+    verbindenKnop.addEventListener("click", async () => {
+
       try {
-        gekozenHub = hub;
 
-        status.innerHTML =
-          "✅ Hub gevonden!<br><br>" +
-          "Naam: " +
-          (hub.name || "Onbekend") +
-          "<br><br>🔌 Verbinden...";
-
-        await hub.connect();
-
-        status.innerHTML =
-          "✅ Verbonden met LEGO!<br><br>" +
-          "Motor op poort A zoeken...";
-
-        motorA = await hub.waitForDeviceAtPort("A");
-
-        if (!motorA) {
-          status.innerHTML =
-            "❌ Geen motor gevonden op poort A.";
-          return;
-        }
-
-        status.innerHTML =
-          "🟢 <b>LEGO KLAAR!</b><br><br>" +
-          "Hub: " +
-          (hub.name || "Onbekend") +
-          "<br>" +
-          "Motor gevonden op poort A.";
-
-        verbinden.disabled = true;
-        motorKnop.disabled = false;
-        stopKnop.disabled = false;
-
-      } catch (error) {
-        console.error(error);
-
-        status.innerHTML =
-          "❌ Verbinden mislukt.<br><br>" +
-          (error.message || error.name || "Onbekende fout");
-      }
-    });
-
-    // Zoeken naar de hub
-    verbinden.addEventListener("click", () => {
-      try {
         status.textContent =
           "🔎 LEGO Powered Up zoeken...";
 
-        poweredUP.scan();
-
-      } catch (error) {
-        console.error(error);
+        apparaat = await navigator.bluetooth.requestDevice({
+          filters: [
+            {
+              services: [LPF2_HUB_SERVICE]
+            }
+          ],
+          optionalServices: [
+            LPF2_HUB_SERVICE
+          ]
+        });
 
         status.innerHTML =
-          "❌ Zoeken mislukt.<br><br>" +
-          (error.message || error.name || "Onbekende fout");
+          "✅ Hub gevonden:<br>" +
+          (apparaat.name || "Onbekende hub") +
+          "<br><br>🔌 Verbinden...";
+
+        const server = await apparaat.gatt.connect();
+
+        const service =
+          await server.getPrimaryService(LPF2_HUB_SERVICE);
+
+        karakteristiek =
+          await service.getCharacteristic(LPF2_HUB_CHARACTERISTIC);
+
+        status.innerHTML =
+          "🟢 <b>LEGO VERBONDEN!</b><br><br>" +
+          "Hub: " +
+          (apparaat.name || "Onbekend") +
+          "<br><br>" +
+          "Motor op poort A kan nu getest worden.";
+
+        motorKnop.disabled = false;
+        stopKnop.disabled = false;
+        verbindenKnop.disabled = true;
+
+      } catch (fout) {
+
+        console.error(fout);
+
+        status.innerHTML =
+          "❌ Verbinden mislukt.<br><br>" +
+          "<b>" +
+          (fout.message || fout.name || "Onbekende fout") +
+          "</b>";
       }
+
     });
 
-    // Motor 1 seconde laten draaien
-    motorKnop.addEventListener("click", async () => {
-      if (!motorA) {
+
+    // -----------------------------------------
+    // MOTORCOMMANDO
+    // -----------------------------------------
+
+    async function motor(power) {
+
+      if (!karakteristiek) {
         status.textContent =
-          "⚠️ Geen motor gevonden.";
+          "⚠️ Verbind eerst met de LEGO-hub.";
         return;
       }
 
+      /*
+        Powered Up:
+        poort A = 0x00
+        0x81 = output command
+        0x11 = direct uitvoeren + feedback
+        0x51 = WriteDirectModeData
+        0x00 = motor power mode
+        power = -100 t/m 100
+
+        0 = vrij laten draaien
+        127 = remmen
+      */
+
+      const pakket = new Uint8Array([
+        0x08,
+        0x00,
+        0x81,
+        0x00,
+        0x11,
+        0x51,
+        0x00,
+        power < 0 ? 256 + power : power
+      ]);
+
       try {
-        status.textContent =
-          "⚙️ Motor A draait 1 seconde...";
 
-        motorA.setPower(30);
+        if (
+          karakteristiek.properties.writeWithoutResponse
+        ) {
+          await karakteristiek.writeValueWithoutResponse(pakket);
+        } else {
+          await karakteristiek.writeValue(pakket);
+        }
 
-        setTimeout(() => {
-          motorA.brake();
+      } catch (fout) {
 
-          status.textContent =
-            "✅ Motor A heeft gedraaid en is gestopt.";
-        }, 1000);
-
-      } catch (error) {
-        console.error(error);
+        console.error(fout);
 
         status.innerHTML =
-          "❌ Motorfout:<br><br>" +
-          (error.message || error.name || "Onbekende fout");
+          "❌ Motoropdracht mislukt.<br><br>" +
+          (fout.message || fout.name || "Onbekende fout");
       }
+    }
+
+
+    // -----------------------------------------
+    // TEST MOTOR
+    // -----------------------------------------
+
+    motorKnop.addEventListener("click", async () => {
+
+      status.textContent =
+        "⚙️ Motor A draait 1 seconde...";
+
+      await motor(20);
+
+      setTimeout(async () => {
+
+        await motor(127);
+
+        status.textContent =
+          "✅ Motor A heeft 1 seconde gedraaid en is gestopt.";
+
+      }, 1000);
+
     });
 
-    // Motor stoppen
-    stopKnop.addEventListener("click", () => {
-      if (motorA) {
-        motorA.brake();
-        status.textContent =
-          "🛑 Motor A gestopt.";
-      }
+
+    // -----------------------------------------
+    // STOP
+    // -----------------------------------------
+
+    stopKnop.addEventListener("click", async () => {
+
+      await motor(127);
+
+      status.textContent =
+        "🛑 Motor A gestopt.";
     });
+
   </script>
 
 </body>
