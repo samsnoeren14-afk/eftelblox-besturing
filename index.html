@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox - LEGO Test</title>
+  <title>Eftelblox - LEGO diagnose</title>
 
   <style>
     body {
@@ -19,12 +19,12 @@
 
     .pagina {
       width: 90%;
-      max-width: 500px;
+      max-width: 550px;
       text-align: center;
     }
 
     h1 {
-      font-size: 38px;
+      font-size: 36px;
     }
 
     button {
@@ -33,28 +33,11 @@
       margin-top: 15px;
       border: none;
       border-radius: 18px;
-      font-size: 22px;
+      font-size: 21px;
       font-weight: bold;
       color: white;
-      cursor: pointer;
-    }
-
-    #verbinden {
       background: #2563eb;
-    }
-
-    #motor {
-      background: #16a34a;
-    }
-
-    #stop {
-      background: #dc2626;
-    }
-
-    #motor:disabled,
-    #stop:disabled {
-      background: #555;
-      cursor: not-allowed;
+      cursor: pointer;
     }
 
     #status {
@@ -62,7 +45,17 @@
       padding: 18px;
       background: #222;
       border-radius: 12px;
-      line-height: 1.5;
+      text-align: left;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .goed {
+      color: #4ade80;
+    }
+
+    .fout {
+      color: #f87171;
     }
   </style>
 </head>
@@ -73,113 +66,102 @@
 
     <h1>🎢 Eftelblox</h1>
 
-    <button id="verbinden">
-      🔗 VERBIND MET LEGO
-    </button>
+    <h2>LEGO diagnose</h2>
 
-    <button id="motor" disabled>
-      ⚙️ TEST MOTOR A
-    </button>
-
-    <button id="stop" disabled>
-      🛑 STOP MOTOR
+    <button id="testKnop">
+      🔍 TEST LEGO-HUB
     </button>
 
     <div id="status">
-      Nog niet verbonden.
+      Nog niet getest.
     </div>
 
   </div>
 
   <script>
-    const verbindenKnop = document.getElementById("verbinden");
-    const motorKnop = document.getElementById("motor");
-    const stopKnop = document.getElementById("stop");
+    const testKnop = document.getElementById("testKnop");
     const status = document.getElementById("status");
 
-    const LEGO_SERVICE =
+    const HUB_SERVICE =
       "00001623-1212-efde-1623-785feabcd123";
 
-    const LEGO_CHARACTERISTIC =
-      "00001624-1212-efde-1623-785feabcd123";
+    const BOOTLOADER_SERVICE =
+      "00001625-1212-efde-1623-785feabcd123";
 
-    let legoDevice = null;
-    let legoCharacteristic = null;
+    testKnop.addEventListener("click", async () => {
 
-    verbindenKnop.addEventListener("click", async () => {
       try {
-        status.textContent = "🔎 LEGO-hub zoeken...";
 
-        legoDevice = await navigator.bluetooth.requestDevice({
+        status.innerHTML = "🔎 LEGO-hub zoeken...";
+
+        const device = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: [LEGO_SERVICE]
+          optionalServices: [
+            HUB_SERVICE,
+            BOOTLOADER_SERVICE
+          ]
         });
 
-        status.textContent =
-          "✅ LEGO gevonden: " +
-          (legoDevice.name || "Onbekende hub") +
-          "<br><br>🔌 Verbinden...";
+        status.innerHTML =
+          "✅ Gevonden: <b>" +
+          (device.name || "Onbekende hub") +
+          "</b><br><br>" +
+          "🔌 Verbinding maken...";
 
-        const server = await legoDevice.gatt.connect();
-
-        const service = await server.getPrimaryService(LEGO_SERVICE);
-
-        legoCharacteristic =
-          await service.getCharacteristic(LEGO_CHARACTERISTIC);
+        const server = await device.gatt.connect();
 
         status.innerHTML =
-          "🟢 VERBONDEN MET LEGO!<br><br>" +
-          "Hub: " +
-          (legoDevice.name || "Onbekende hub");
+          "🟢 Bluetooth verbonden.<br><br>" +
+          "🔍 LEGO-services controleren...";
 
-        motorKnop.disabled = false;
-        stopKnop.disabled = false;
+        const services = await server.getPrimaryServices();
 
-      } catch (error) {
-        console.error(error);
+        let gevonden = "";
 
-        status.innerHTML =
-          "❌ Verbinden mislukt.<br><br>" +
-          (error.message || error.name);
-      }
-    });
+        for (const service of services) {
+          gevonden +=
+            "<br>• " + service.uuid;
+        }
 
-    async function stuurMotor(power) {
+        const heeftHubService =
+          services.some(
+            service =>
+              service.uuid.toLowerCase() === HUB_SERVICE.toLowerCase()
+          );
 
-      if (!legoCharacteristic) {
-        status.textContent =
-          "⚠️ Verbind eerst met de LEGO-hub.";
-        return;
-      }
+        const heeftBootloader =
+          services.some(
+            service =>
+              service.uuid.toLowerCase() === BOOTLOADER_SERVICE.toLowerCase()
+          );
 
-      /*
-        LEGO Powered Up:
-        poort A = 00
-        positieve waarde = vooruit
-        0 = stoppen
-      */
+        if (heeftHubService) {
 
-      const pakket = new Uint8Array([
-        0x0A,
-        0x00,
-        0x81,
-        0x00,
-        0x00,
-        0x60,
-        0x00,
-        power,
-        0x00,
-        0x00
-      ]);
+          status.innerHTML =
+            "<span class='goed'>✅ NORMALE LEGO HUB-SERVICE GEVONDEN!</span>" +
+            "<br><br>" +
+            "Dit is precies wat we nodig hebben." +
+            "<br><br>" +
+            "<b>Gevonden services:</b>" +
+            gevonden;
 
-      try {
+        } else if (heeftBootloader) {
 
-        if (
-          legoCharacteristic.properties.writeWithoutResponse
-        ) {
-          await legoCharacteristic.writeValueWithoutResponse(pakket);
+          status.innerHTML =
+            "<span class='fout'>⚠️ BOOTLOADER-SERVICE GEVONDEN</span>" +
+            "<br><br>" +
+            "De hub lijkt niet in de normale Powered Up-modus te staan." +
+            "<br><br>" +
+            "<b>Gevonden services:</b>" +
+            gevonden;
+
         } else {
-          await legoCharacteristic.writeValue(pakket);
+
+          status.innerHTML =
+            "<span class='fout'>❌ GEEN NORMALE LEGO HUB-SERVICE</span>" +
+            "<br><br>" +
+            "<b>Gevonden services:</b>" +
+            gevonden;
         }
 
       } catch (error) {
@@ -187,34 +169,13 @@
         console.error(error);
 
         status.innerHTML =
-          "❌ Motoropdracht mislukt.<br><br>" +
-          (error.message || error.name);
+          "<span class='fout'>❌ TEST MISLUKT</span>" +
+          "<br><br>" +
+          "<b>Fout:</b> " +
+          (error.message || error.name || "onbekend");
       }
-    }
 
-    motorKnop.addEventListener("click", async () => {
-
-      status.textContent =
-        "⚙️ Motor A draait 1 seconde...";
-
-      await stuurMotor(15);
-
-      setTimeout(async () => {
-        await stuurMotor(0);
-
-        status.textContent =
-          "✅ Motor A heeft gedraaid en is gestopt.";
-      }, 1000);
     });
-
-    stopKnop.addEventListener("click", async () => {
-
-      await stuurMotor(0);
-
-      status.textContent =
-        "🛑 Motor A gestopt.";
-    });
-
   </script>
 
 </body>
