@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox - LEGO test</title>
+  <title>Eftelblox - LEGO Verbinding</title>
 
   <style>
     body {
@@ -12,7 +12,6 @@
       background: #151515;
       color: white;
       font-family: Arial, sans-serif;
-
       display: flex;
       justify-content: center;
       align-items: center;
@@ -25,24 +24,22 @@
     }
 
     h1 {
-      font-size: 40px;
-      margin-bottom: 10px;
+      font-size: 38px;
     }
 
     h2 {
       font-size: 24px;
-      margin-bottom: 25px;
     }
 
     button {
       width: 100%;
-      padding: 24px;
+      padding: 22px;
       margin-top: 15px;
       border: none;
-      border-radius: 20px;
-      color: white;
+      border-radius: 18px;
       font-size: 22px;
       font-weight: bold;
+      color: white;
       cursor: pointer;
     }
 
@@ -52,12 +49,10 @@
 
     #status {
       margin-top: 25px;
-      padding: 15px;
+      padding: 18px;
       background: #222;
       border-radius: 12px;
-      font-size: 18px;
       line-height: 1.5;
-      word-break: break-word;
     }
   </style>
 </head>
@@ -76,7 +71,6 @@
     <div id="status">
       Nog niet verbonden.
     </div>
-
   </div>
 
   <script>
@@ -88,14 +82,7 @@
     legoKnop.addEventListener("click", async () => {
 
       try {
-        if (!navigator.bluetooth) {
-          status.textContent =
-            "❌ Deze browser ondersteunt Web Bluetooth niet.";
-          return;
-        }
-
-        status.textContent =
-          "🔎 LEGO Powered Up zoeken...";
+        status.textContent = "🔎 LEGO-hub zoeken...";
 
         legoDevice = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
@@ -106,18 +93,32 @@
 
         status.textContent =
           "✅ LEGO gevonden: " +
-          (legoDevice.name || "onbekende hub");
+          (legoDevice.name || "Onbekende hub") +
+          "<br><br>🔌 Verbinding maken...";
 
-        legoDevice.addEventListener("gattserverdisconnected", () => {
-          status.textContent = "🔴 LEGO is losgekoppeld.";
-        });
+        const server = await legoDevice.gatt.connect();
+
+        status.textContent =
+          "🟢 VERBONDEN MET LEGO!<br><br>" +
+          "Hub: " +
+          (legoDevice.name || "Onbekende hub");
+
+        console.log("Bluetooth verbonden:", server);
+
+        legoDevice.addEventListener(
+          "gattserverdisconnected",
+          () => {
+            status.textContent = "🔴 LEGO-hub is losgekoppeld.";
+          }
+        );
 
       } catch (error) {
 
         console.error(error);
 
-        status.textContent =
-          "❌ Er ging iets mis: " +
+        status.innerHTML =
+          "❌ Verbinding mislukt.<br><br>" +
+          "Fout: " +
           (error.message || error.name);
       }
 
