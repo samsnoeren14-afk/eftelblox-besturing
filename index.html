@@ -6,7 +6,6 @@
 
   <title>Eftelblox - Showbesturing</title>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -89,10 +88,6 @@
 
     .groen {
       background: #16a34a;
-    }
-
-    .rood {
-      background: #dc2626;
     }
 
     .grijs {
@@ -249,10 +244,7 @@
   <h1>🎢 Eftelblox</h1>
   <div class="ondertitel">Attractie- en showbesturing</div>
 
-
-  <!-- =====================================================
-       BEZOEKERSPANEEL
-       ===================================================== -->
+  <!-- BEZOEKERSPANEEL -->
 
   <section id="bezoekersPaneel">
 
@@ -289,14 +281,6 @@
         ▶️ START SHOW
       </button>
 
-      <button
-        id="stopShowKnop"
-        class="grote-knop rood"
-        disabled
-      >
-        🛑 STOP SHOW
-      </button>
-
       <div
         id="bezoekerStatus"
         class="status"
@@ -305,7 +289,6 @@
       </div>
 
     </div>
-
 
     <div class="paneel">
 
@@ -317,7 +300,6 @@
 
     </div>
 
-
     <button
       id="werknemerKnop"
       class="klein-medewerker"
@@ -328,9 +310,7 @@
   </section>
 
 
-  <!-- =====================================================
-       WERKNEMERPANEEL
-       ===================================================== -->
+  <!-- WERKNEMERPANEEL -->
 
   <section
     id="werknemersPaneel"
@@ -424,7 +404,6 @@
 
       <div id="blokLijst" class="blok-lijst"></div>
 
-
       <div class="toevoegen">
 
         <h3>Blok toevoegen</h3>
@@ -460,7 +439,6 @@
 
       </div>
 
-
       <button
         id="showOpslaanKnop"
         class="grote-knop groen"
@@ -482,9 +460,7 @@
 </div>
 
 
-<!-- =====================================================
-     WERKNEMER LOGIN
-     ===================================================== -->
+<!-- WERKNEMER LOGIN -->
 
 <div
   id="codeModal"
@@ -532,10 +508,6 @@
 
 <script type="module">
 
-/* =========================================================
-   1. SUPABASE
-   ========================================================= */
-
 const SUPABASE_URL =
   "https://vdjnulaseklleowhqirs.supabase.co";
 
@@ -548,28 +520,13 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
-
-/* =========================================================
-   2. WERKNEMERSCODE
-   ========================================================= */
-
 const WERKNEMER_CODE = "1234";
-
-
-/* =========================================================
-   3. LEGO BLUETOOTH
-   ========================================================= */
 
 const HUB_SERVICE =
   "00001623-1212-efde-1623-785feabcd123";
 
 const HUB_CHARACTERISTIC =
   "00001624-1212-efde-1623-785feabcd123";
-
-
-/* =========================================================
-   4. MOTORPOORTEN
-   ========================================================= */
 
 const PORTS = {
   A: 0x00,
@@ -578,12 +535,8 @@ const PORTS = {
   D: 0x03
 };
 
-
-/* =========================================================
-   5. SHOW
-   ========================================================= */
-
-const SHOW_ID = "danse-macabre";
+const SHOW_ID =
+  "danse-macabre";
 
 let show = {
   id: SHOW_ID,
@@ -593,25 +546,14 @@ let show = {
   blocks: []
 };
 
-
-/* =========================================================
-   6. VARIABELEN
-   ========================================================= */
-
 let gekozenMP3 = null;
-
 let legoDevice = null;
-
 let legoCharacteristic = null;
-
 let showTimers = [];
-
 let showBezig = false;
 
 
-/* =========================================================
-   7. ELEMENTEN
-   ========================================================= */
+/* ELEMENTEN */
 
 const bezoekersPaneel =
   document.getElementById("bezoekersPaneel");
@@ -645,9 +587,6 @@ const verbindenKnop =
 
 const startShowKnop =
   document.getElementById("startShowKnop");
-
-const stopShowKnop =
-  document.getElementById("stopShowKnop");
 
 const bezoekerStatus =
   document.getElementById("bezoekerStatus");
@@ -683,26 +622,17 @@ const werknemerStatus =
   document.getElementById("werknemerStatus");
 
 
-/* =========================================================
-   8. WERKNEMER OPENEN
-   ========================================================= */
+/* WERKNEMER */
 
 werknemerKnop.addEventListener("click", () => {
 
   codeInput.value = "";
-
   codeStatus.textContent = "";
-
   codeModal.style.display = "flex";
-
   codeInput.focus();
 
 });
 
-
-/* =========================================================
-   9. WERKNEMER LOGIN
-   ========================================================= */
 
 codeOkKnop.addEventListener("click", () => {
 
@@ -710,16 +640,10 @@ codeOkKnop.addEventListener("click", () => {
 
     codeModal.style.display = "none";
 
-    bezoekersPaneel
-      .classList
-      .add("verborgen");
-
-    werknemersPaneel
-      .classList
-      .remove("verborgen");
+    bezoekersPaneel.classList.add("verborgen");
+    werknemersPaneel.classList.remove("verborgen");
 
     renderBlokken();
-
     updateBlokOpties();
 
   } else {
@@ -732,10 +656,6 @@ codeOkKnop.addEventListener("click", () => {
 });
 
 
-/* =========================================================
-   10. LOGIN SLUITEN
-   ========================================================= */
-
 codeAnnulerenKnop.addEventListener(
   "click",
   () => {
@@ -746,39 +666,24 @@ codeAnnulerenKnop.addEventListener(
 );
 
 
-/* =========================================================
-   11. TERUG NAAR BEZOEKER
-   ========================================================= */
-
 terugKnop.addEventListener("click", () => {
 
-  werknemersPaneel
-    .classList
-    .add("verborgen");
-
-  bezoekersPaneel
-    .classList
-    .remove("verborgen");
+  werknemersPaneel.classList.add("verborgen");
+  bezoekersPaneel.classList.remove("verborgen");
 
 });
 
 
-/* =========================================================
-   12. NIEUW BLOK OPTIES
-   ========================================================= */
+/* BLOK OPTIES */
 
 function updateBlokOpties() {
 
-  const type =
-    nieuwBlokType.value;
-
+  const type = nieuwBlokType.value;
 
   if (type === "wait") {
 
     blokOpties.innerHTML = `
-      <label>
-        Hoeveel seconden wachten?
-      </label>
+      <label>Hoeveel seconden wachten?</label>
 
       <input
         id="waitSeconds"
@@ -789,10 +694,7 @@ function updateBlokOpties() {
       >
     `;
 
-  }
-
-
-  else if (type === "motor") {
+  } else if (type === "motor") {
 
     blokOpties.innerHTML = `
 
@@ -800,26 +702,20 @@ function updateBlokOpties() {
 
         <div>
 
-          <label>
-            Motor
-          </label>
+          <label>Motor</label>
 
           <select id="motorPort">
-
             <option value="A">Motor A</option>
             <option value="B">Motor B</option>
             <option value="C">Motor C</option>
             <option value="D">Motor D</option>
-
           </select>
 
         </div>
 
         <div>
 
-          <label>
-            Snelheid
-          </label>
+          <label>Snelheid</label>
 
           <input
             id="motorSpeed"
@@ -835,24 +731,17 @@ function updateBlokOpties() {
 
     `;
 
-  }
-
-
-  else if (type === "stop") {
+  } else {
 
     blokOpties.innerHTML = `
 
-      <label>
-        Welke motor stoppen?
-      </label>
+      <label>Welke motor stoppen?</label>
 
       <select id="stopPort">
-
         <option value="A">Motor A</option>
         <option value="B">Motor B</option>
         <option value="C">Motor C</option>
         <option value="D">Motor D</option>
-
       </select>
 
     `;
@@ -868,9 +757,7 @@ nieuwBlokType.addEventListener(
 );
 
 
-/* =========================================================
-   13. BLOK TOEVOEGEN
-   ========================================================= */
+/* BLOK TOEVOEGEN */
 
 blokToevoegenKnop.addEventListener(
   "click",
@@ -878,7 +765,6 @@ blokToevoegenKnop.addEventListener(
 
     const type =
       nieuwBlokType.value;
-
 
     if (type === "wait") {
 
@@ -894,10 +780,7 @@ blokToevoegenKnop.addEventListener(
         seconds: Math.max(0, seconds)
       });
 
-    }
-
-
-    else if (type === "motor") {
+    } else if (type === "motor") {
 
       const port =
         document.getElementById(
@@ -921,10 +804,7 @@ blokToevoegenKnop.addEventListener(
           )
       });
 
-    }
-
-
-    else if (type === "stop") {
+    } else {
 
       const port =
         document.getElementById(
@@ -938,16 +818,13 @@ blokToevoegenKnop.addEventListener(
 
     }
 
-
     renderBlokken();
 
   }
 );
 
 
-/* =========================================================
-   14. BLOKKEN WEERGEVEN
-   ========================================================= */
+/* BLOKKEN TONEN */
 
 function renderBlokken() {
 
@@ -982,9 +859,7 @@ function renderBlokken() {
       div.className =
         "blok " + blok.type;
 
-
       let tekst = "";
-
 
       if (blok.type === "wait") {
 
@@ -993,7 +868,6 @@ function renderBlokken() {
 
       }
 
-
       if (blok.type === "motor") {
 
         tekst =
@@ -1001,14 +875,12 @@ function renderBlokken() {
 
       }
 
-
       if (blok.type === "stop") {
 
         tekst =
           `🛑 Stop motor ${blok.port}`;
 
       }
-
 
       div.innerHTML = `
 
@@ -1081,13 +953,11 @@ blokLijst.addEventListener(
       return;
     }
 
-
     const index =
       Number(button.dataset.index);
 
     const action =
       button.dataset.action;
-
 
     if (action === "delete") {
 
@@ -1097,7 +967,6 @@ blokLijst.addEventListener(
       );
 
     }
-
 
     if (action === "up" && index > 0) {
 
@@ -1110,7 +979,6 @@ blokLijst.addEventListener(
       ];
 
     }
-
 
     if (
       action === "down" &&
@@ -1127,16 +995,13 @@ blokLijst.addEventListener(
 
     }
 
-
     renderBlokken();
 
   }
 );
 
 
-/* =========================================================
-   15. MP3 KIEZEN
-   ========================================================= */
+/* MP3 KIEZEN */
 
 mp3Bestand.addEventListener(
   "change",
@@ -1145,15 +1010,14 @@ mp3Bestand.addEventListener(
     gekozenMP3 =
       mp3Bestand.files[0] || null;
 
-
     if (!gekozenMP3) {
 
       muziekStatus.textContent =
         "Nog geen MP3 gekozen.";
 
       return;
-    }
 
+    }
 
     muziekStatus.textContent =
       "✅ Gekozen: " +
@@ -1163,9 +1027,7 @@ mp3Bestand.addEventListener(
 );
 
 
-/* =========================================================
-   16. MP3 UPLOADEN
-   ========================================================= */
+/* MP3 UPLOADEN */
 
 uploadMuziekKnop.addEventListener(
   "click",
@@ -1177,29 +1039,25 @@ uploadMuziekKnop.addEventListener(
         "⚠️ Kies eerst een MP3.";
 
       return;
-    }
 
+    }
 
     try {
 
       muziekStatus.textContent =
         "☁️ MP3 uploaden...";
 
-
       const veiligeNaam =
-        gekozenMP3.name
-          .replace(
-            /[^a-zA-Z0-9._-]/g,
-            "_"
-          );
-
+        gekozenMP3.name.replace(
+          /[^a-zA-Z0-9._-]/g,
+          "_"
+        );
 
       const pad =
         "shows/" +
         Date.now() +
         "-" +
         veiligeNaam;
-
 
       const result =
         await supabaseClient
@@ -1216,11 +1074,9 @@ uploadMuziekKnop.addEventListener(
             }
           );
 
-
       if (result.error) {
         throw result.error;
       }
-
 
       const publicUrl =
         supabaseClient
@@ -1230,20 +1086,16 @@ uploadMuziekKnop.addEventListener(
           .data
           .publicUrl;
 
-
       show.music_url =
         publicUrl;
 
       show.music_name =
         gekozenMP3.name;
 
-
       muziekStatus.textContent =
         "✅ MP3 staat online.";
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
@@ -1257,9 +1109,7 @@ uploadMuziekKnop.addEventListener(
 );
 
 
-/* =========================================================
-   17. SHOW OPSLAAN
-   ========================================================= */
+/* SHOW OPSLAAN */
 
 showOpslaanKnop.addEventListener(
   "click",
@@ -1269,7 +1119,6 @@ showOpslaanKnop.addEventListener(
 
       werknemerStatus.textContent =
         "☁️ Show opslaan...";
-
 
       const result =
         await supabaseClient
@@ -1293,21 +1142,16 @@ showOpslaanKnop.addEventListener(
             }
           );
 
-
       if (result.error) {
         throw result.error;
       }
 
-
       werknemerStatus.textContent =
         "✅ Show online opgeslagen!";
 
-
       await laadShow();
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
@@ -1321,9 +1165,7 @@ showOpslaanKnop.addEventListener(
 );
 
 
-/* =========================================================
-   18. SHOW LADEN
-   ========================================================= */
+/* SHOW LADEN */
 
 async function laadShow() {
 
@@ -1339,11 +1181,9 @@ async function laadShow() {
         )
         .single();
 
-
     if (result.error) {
       throw result.error;
     }
-
 
     if (result.data) {
 
@@ -1367,16 +1207,12 @@ async function laadShow() {
             : []
       };
 
-
       renderBlokken();
-
       renderShowInfo();
 
     }
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(error);
 
@@ -1389,9 +1225,7 @@ async function laadShow() {
 }
 
 
-/* =========================================================
-   19. SHOWINFO
-   ========================================================= */
+/* SHOW INFO */
 
 function renderShowInfo() {
 
@@ -1419,9 +1253,7 @@ function renderShowInfo() {
 }
 
 
-/* =========================================================
-   20. LEGO VERBINDEN
-   ========================================================= */
+/* LEGO VERBINDEN */
 
 verbindenKnop.addEventListener(
   "click",
@@ -1435,12 +1267,10 @@ verbindenKnop.addEventListener(
       return;
     }
 
-
     try {
 
       bezoekerStatus.textContent =
         "🔎 LEGO Powered Up zoeken...";
-
 
       legoDevice =
         await navigator.bluetooth
@@ -1452,12 +1282,10 @@ verbindenKnop.addEventListener(
                 ]
               }
             ],
-
             optionalServices: [
               HUB_SERVICE
             ]
           });
-
 
       bezoekerStatus.innerHTML =
         "✅ Hub gevonden:<br>" +
@@ -1467,10 +1295,8 @@ verbindenKnop.addEventListener(
         ) +
         "<br><br>🔌 Verbinden...";
 
-
       const server =
         await legoDevice.gatt.connect();
-
 
       const service =
         await server
@@ -1478,13 +1304,11 @@ verbindenKnop.addEventListener(
             HUB_SERVICE
           );
 
-
       legoCharacteristic =
         await service
           .getCharacteristic(
             HUB_CHARACTERISTIC
           );
-
 
       bezoekerStatus.innerHTML =
         "🟢 <strong>LEGO VERBONDEN!</strong><br><br>" +
@@ -1496,18 +1320,10 @@ verbindenKnop.addEventListener(
         "<br><br>" +
         "Klaar om de show te starten.";
 
-
       verbindenKnop.disabled = true;
+      startShowKnop.disabled = false;
 
-      startShowKnop.disabled =
-        false;
-
-      stopShowKnop.disabled =
-        false;
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
@@ -1521,9 +1337,7 @@ verbindenKnop.addEventListener(
 );
 
 
-/* =========================================================
-   21. MOTOR AAN
-   ========================================================= */
+/* MOTOR AAN */
 
 async function motorAan(
   port,
@@ -1531,21 +1345,16 @@ async function motorAan(
 ) {
 
   if (!legoCharacteristic) {
-
     throw new Error(
       "LEGO-hub is niet verbonden."
     );
-
   }
-
 
   const portByte =
     PORTS[port];
 
-
   let power =
     Math.round(speed);
-
 
   power =
     Math.max(
@@ -1556,12 +1365,10 @@ async function motorAan(
       )
     );
 
-
   const powerByte =
     power < 0
       ? 256 + power
       : power;
-
 
   const pakket =
     new Uint8Array([
@@ -1575,7 +1382,6 @@ async function motorAan(
       powerByte
     ]);
 
-
   if (
     legoCharacteristic
       .properties
@@ -1587,9 +1393,7 @@ async function motorAan(
         pakket
       );
 
-  }
-
-  else {
+  } else {
 
     await legoCharacteristic
       .writeValue(
@@ -1601,9 +1405,7 @@ async function motorAan(
 }
 
 
-/* =========================================================
-   22. MOTOR STOPPEN
-   ========================================================= */
+/* MOTOR STOPPEN */
 
 async function motorStop(
   port
@@ -1617,16 +1419,13 @@ async function motorStop(
 }
 
 
-/* =========================================================
-   23. ALLES STOPPEN
-   ========================================================= */
+/* ALLES STOPPEN */
 
 async function allesStoppen() {
 
   if (!legoCharacteristic) {
     return;
   }
-
 
   for (
     const port of [
@@ -1643,9 +1442,7 @@ async function allesStoppen() {
         port
       );
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.warn(
         "Motor " +
@@ -1661,9 +1458,7 @@ async function allesStoppen() {
 }
 
 
-/* =========================================================
-   24. SHOW STARTEN
-   ========================================================= */
+/* SHOW STARTEN */
 
 startShowKnop.addEventListener(
   "click",
@@ -1672,7 +1467,6 @@ startShowKnop.addEventListener(
     if (showBezig) {
       return;
     }
-
 
     if (!legoCharacteristic) {
 
@@ -1683,7 +1477,6 @@ startShowKnop.addEventListener(
 
     }
 
-
     if (!show.music_url) {
 
       bezoekerStatus.textContent =
@@ -1693,14 +1486,10 @@ startShowKnop.addEventListener(
 
     }
 
-
     showBezig = true;
 
-
     startShowKnop.disabled = true;
-
     verbindenKnop.disabled = true;
-
 
     showTimers.forEach(
       timer =>
@@ -1709,41 +1498,25 @@ startShowKnop.addEventListener(
 
     showTimers = [];
 
-
     try {
 
       await allesStoppen();
-
-
-      /*
-       * Muziek laden
-       */
 
       const muziek =
         new Audio(
           show.music_url
         );
 
-
-      muziek.preload =
-        "auto";
-
-
-      /*
-       * Alles begint op dezelfde
-       * geplande starttijd.
-       */
+      muziek.preload = "auto";
 
       const startTijd =
         performance.now() + 700;
-
 
       const muziekTimer =
         setTimeout(
           () => {
 
-            muziek.currentTime =
-              0;
+            muziek.currentTime = 0;
 
             muziek.play()
               .catch(
@@ -1755,33 +1528,22 @@ startShowKnop.addEventListener(
               );
 
           },
-
           Math.max(
             0,
             startTijd -
             performance.now()
           )
-
         );
-
 
       showTimers.push(
         muziekTimer
       );
 
-
-      /*
-       * Tijdlijn van de blokken
-       */
-
-      let tijd =
-        0;
-
+      let tijd = 0;
 
       for (
         const blok of show.blocks
       ) {
-
 
         if (
           blok.type === "wait"
@@ -1790,12 +1552,11 @@ startShowKnop.addEventListener(
           tijd +=
             Number(
               blok.seconds
-            ) *
-            1000;
+            ) * 1000;
 
           continue;
-        }
 
+        }
 
         if (
           blok.type === "motor"
@@ -1805,7 +1566,6 @@ startShowKnop.addEventListener(
             startTijd +
             tijd -
             performance.now();
-
 
           const timer =
             setTimeout(
@@ -1818,9 +1578,7 @@ startShowKnop.addEventListener(
                     blok.speed
                   );
 
-                }
-
-                catch (error) {
+                } catch (error) {
 
                   console.error(
                     error
@@ -1829,22 +1587,19 @@ startShowKnop.addEventListener(
                 }
 
               },
-
               Math.max(
                 0,
                 actieTijd
               )
-
             );
-
 
           showTimers.push(
             timer
           );
 
           continue;
-        }
 
+        }
 
         if (
           blok.type === "stop"
@@ -1854,7 +1609,6 @@ startShowKnop.addEventListener(
             startTijd +
             tijd -
             performance.now();
-
 
           const timer =
             setTimeout(
@@ -1866,9 +1620,7 @@ startShowKnop.addEventListener(
                     blok.port
                   );
 
-                }
-
-                catch (error) {
+                } catch (error) {
 
                   console.error(
                     error
@@ -1877,14 +1629,11 @@ startShowKnop.addEventListener(
                 }
 
               },
-
               Math.max(
                 0,
                 actieTijd
               )
-
             );
-
 
           showTimers.push(
             timer
@@ -1894,11 +1643,6 @@ startShowKnop.addEventListener(
 
       }
 
-
-      /*
-       * Einde
-       */
-
       const eindeTimer =
         setTimeout(
           async () => {
@@ -1907,17 +1651,13 @@ startShowKnop.addEventListener(
 
             showBezig = false;
 
-            startShowKnop.disabled =
-              false;
-
-            verbindenKnop.disabled =
-              false;
+            startShowKnop.disabled = false;
+            verbindenKnop.disabled = false;
 
             bezoekerStatus.textContent =
               "✅ Show afgelopen.";
 
           },
-
           Math.max(
             0,
             startTijd +
@@ -1925,31 +1665,23 @@ startShowKnop.addEventListener(
             500 -
             performance.now()
           )
-
         );
-
 
       showTimers.push(
         eindeTimer
       );
 
-
       bezoekerStatus.textContent =
         "🎭 SHOW GESTART!";
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(error);
 
       showBezig = false;
 
-      startShowKnop.disabled =
-        false;
-
-      verbindenKnop.disabled =
-        false;
+      startShowKnop.disabled = false;
+      verbindenKnop.disabled = false;
 
       bezoekerStatus.textContent =
         "❌ Showfout: " +
@@ -1961,45 +1693,7 @@ startShowKnop.addEventListener(
 );
 
 
-/* =========================================================
-   25. SHOW STOPPEN
-   ========================================================= */
-
-stopShowKnop.addEventListener(
-  "click",
-  async () => {
-
-    showTimers.forEach(
-      timer =>
-        clearTimeout(timer)
-    );
-
-    showTimers = [];
-
-
-    await allesStoppen();
-
-
-    showBezig = false;
-
-
-    startShowKnop.disabled =
-      false;
-
-    verbindenKnop.disabled =
-      false;
-
-
-    bezoekerStatus.textContent =
-      "🛑 Show gestopt.";
-
-  }
-);
-
-
-/* =========================================================
-   26. START
-   ========================================================= */
+/* START */
 
 await laadShow();
 
