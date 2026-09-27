@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox - LEGO Verbinding</title>
+  <title>Eftelblox Test 13</title>
 
   <style>
     body {
@@ -28,7 +28,8 @@
     }
 
     h2 {
-      font-size: 24px;
+      font-size: 22px;
+      color: #60a5fa;
     }
 
     button {
@@ -40,10 +41,6 @@
       font-size: 22px;
       font-weight: bold;
       color: white;
-      cursor: pointer;
-    }
-
-    #legoKnop {
       background: #2563eb;
     }
 
@@ -62,15 +59,17 @@
   <div class="pagina">
 
     <h1>🎢 Eftelblox</h1>
-    <h2>Danse Macabre</h2>
+
+    <h2>STAP 13 TEST</h2>
 
     <button id="legoKnop">
-      🔗 VERBIND MET LEGO
+      🔗 TEST LEGO-VERBINDING
     </button>
 
     <div id="status">
-      Nog niet verbonden.
+      Nieuwe code geladen.
     </div>
+
   </div>
 
   <script>
@@ -82,6 +81,7 @@
     legoKnop.addEventListener("click", async () => {
 
       try {
+
         status.textContent = "🔎 LEGO-hub zoeken...";
 
         legoDevice = await navigator.bluetooth.requestDevice({
@@ -94,32 +94,25 @@
         status.textContent =
           "✅ LEGO gevonden: " +
           (legoDevice.name || "Onbekende hub") +
-          "<br><br>🔌 Verbinding maken...";
+          "\n\n🔌 Nu echt verbinden...";
 
-        const server = await legoDevice.gatt.connect();
+        await legoDevice.gatt.connect();
 
         status.textContent =
-          "🟢 VERBONDEN MET LEGO!<br><br>" +
+          "🟢 ECHT VERBONDEN MET LEGO!\n\n" +
           "Hub: " +
           (legoDevice.name || "Onbekende hub");
 
-        console.log("Bluetooth verbonden:", server);
-
-        legoDevice.addEventListener(
-          "gattserverdisconnected",
-          () => {
-            status.textContent = "🔴 LEGO-hub is losgekoppeld.";
-          }
-        );
-
       } catch (error) {
 
-        console.error(error);
+        status.textContent =
+          "❌ FOUT BIJ VERBINDEN\n\n" +
+          "Naam: " +
+          (error.name || "onbekend") +
+          "\n\nMelding: " +
+          (error.message || "geen melding");
 
-        status.innerHTML =
-          "❌ Verbinding mislukt.<br><br>" +
-          "Fout: " +
-          (error.message || error.name);
+        console.error(error);
       }
 
     });
