@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox</title>
+  <title>Eftelblox - LEGO test</title>
 
   <style>
     body {
@@ -34,15 +34,30 @@
       margin-bottom: 25px;
     }
 
-    .knop {
+    button {
       width: 100%;
       padding: 24px;
+      margin-top: 15px;
       border: none;
       border-radius: 20px;
-      background: #1db954;
       color: white;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
+      cursor: pointer;
+    }
+
+    #legoKnop {
+      background: #2563eb;
+    }
+
+    #status {
+      margin-top: 25px;
+      padding: 15px;
+      background: #222;
+      border-radius: 12px;
+      font-size: 18px;
+      line-height: 1.5;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -50,13 +65,64 @@
 <body>
 
   <div class="pagina">
+
     <h1>🎢 Eftelblox</h1>
     <h2>Danse Macabre</h2>
 
-    <button class="knop">
-      ▶️ START ATTRACTIE
+    <button id="legoKnop">
+      🔗 VERBIND MET LEGO
     </button>
+
+    <div id="status">
+      Nog niet verbonden.
+    </div>
+
   </div>
+
+  <script>
+    const legoKnop = document.getElementById("legoKnop");
+    const status = document.getElementById("status");
+
+    let legoDevice = null;
+
+    legoKnop.addEventListener("click", async () => {
+
+      try {
+        if (!navigator.bluetooth) {
+          status.textContent =
+            "❌ Deze browser ondersteunt Web Bluetooth niet.";
+          return;
+        }
+
+        status.textContent =
+          "🔎 LEGO Powered Up zoeken...";
+
+        legoDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [
+            "00001623-1212-efde-1623-785feabcd123"
+          ]
+        });
+
+        status.textContent =
+          "✅ LEGO gevonden: " +
+          (legoDevice.name || "onbekende hub");
+
+        legoDevice.addEventListener("gattserverdisconnected", () => {
+          status.textContent = "🔴 LEGO is losgekoppeld.";
+        });
+
+      } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "❌ Er ging iets mis: " +
+          (error.message || error.name);
+      }
+
+    });
+  </script>
 
 </body>
 </html>
