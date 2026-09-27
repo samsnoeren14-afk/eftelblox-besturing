@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eftelblox Test 13</title>
+  <title>Eftelblox - LEGO Test</title>
 
   <style>
     body {
@@ -27,11 +27,6 @@
       font-size: 38px;
     }
 
-    h2 {
-      font-size: 22px;
-      color: #60a5fa;
-    }
-
     button {
       width: 100%;
       padding: 22px;
@@ -41,7 +36,25 @@
       font-size: 22px;
       font-weight: bold;
       color: white;
+      cursor: pointer;
+    }
+
+    #verbinden {
       background: #2563eb;
+    }
+
+    #motor {
+      background: #16a34a;
+    }
+
+    #stop {
+      background: #dc2626;
+    }
+
+    #motor:disabled,
+    #stop:disabled {
+      background: #555;
+      cursor: not-allowed;
     }
 
     #status {
@@ -60,62 +73,148 @@
 
     <h1>🎢 Eftelblox</h1>
 
-    <h2>STAP 13 TEST</h2>
+    <button id="verbinden">
+      🔗 VERBIND MET LEGO
+    </button>
 
-    <button id="legoKnop">
-      🔗 TEST LEGO-VERBINDING
+    <button id="motor" disabled>
+      ⚙️ TEST MOTOR A
+    </button>
+
+    <button id="stop" disabled>
+      🛑 STOP MOTOR
     </button>
 
     <div id="status">
-      Nieuwe code geladen.
+      Nog niet verbonden.
     </div>
 
   </div>
 
   <script>
-    const legoKnop = document.getElementById("legoKnop");
+    const verbindenKnop = document.getElementById("verbinden");
+    const motorKnop = document.getElementById("motor");
+    const stopKnop = document.getElementById("stop");
     const status = document.getElementById("status");
 
+    const LEGO_SERVICE =
+      "00001623-1212-efde-1623-785feabcd123";
+
+    const LEGO_CHARACTERISTIC =
+      "00001624-1212-efde-1623-785feabcd123";
+
     let legoDevice = null;
+    let legoCharacteristic = null;
 
-    legoKnop.addEventListener("click", async () => {
-
+    verbindenKnop.addEventListener("click", async () => {
       try {
-
         status.textContent = "🔎 LEGO-hub zoeken...";
 
         legoDevice = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: [
-            "00001623-1212-efde-1623-785feabcd123"
-          ]
+          optionalServices: [LEGO_SERVICE]
         });
 
         status.textContent =
           "✅ LEGO gevonden: " +
           (legoDevice.name || "Onbekende hub") +
-          "\n\n🔌 Nu echt verbinden...";
+          "<br><br>🔌 Verbinden...";
 
-        await legoDevice.gatt.connect();
+        const server = await legoDevice.gatt.connect();
 
-        status.textContent =
-          "🟢 ECHT VERBONDEN MET LEGO!\n\n" +
+        const service = await server.getPrimaryService(LEGO_SERVICE);
+
+        legoCharacteristic =
+          await service.getCharacteristic(LEGO_CHARACTERISTIC);
+
+        status.innerHTML =
+          "🟢 VERBONDEN MET LEGO!<br><br>" +
           "Hub: " +
           (legoDevice.name || "Onbekende hub");
 
+        motorKnop.disabled = false;
+        stopKnop.disabled = false;
+
       } catch (error) {
-
-        status.textContent =
-          "❌ FOUT BIJ VERBINDEN\n\n" +
-          "Naam: " +
-          (error.name || "onbekend") +
-          "\n\nMelding: " +
-          (error.message || "geen melding");
-
         console.error(error);
+
+        status.innerHTML =
+          "❌ Verbinden mislukt.<br><br>" +
+          (error.message || error.name);
+      }
+    });
+
+    async function stuurMotor(power) {
+
+      if (!legoCharacteristic) {
+        status.textContent =
+          "⚠️ Verbind eerst met de LEGO-hub.";
+        return;
       }
 
+      /*
+        LEGO Powered Up:
+        poort A = 00
+        positieve waarde = vooruit
+        0 = stoppen
+      */
+
+      const pakket = new Uint8Array([
+        0x0A,
+        0x00,
+        0x81,
+        0x00,
+        0x00,
+        0x60,
+        0x00,
+        power,
+        0x00,
+        0x00
+      ]);
+
+      try {
+
+        if (
+          legoCharacteristic.properties.writeWithoutResponse
+        ) {
+          await legoCharacteristic.writeValueWithoutResponse(pakket);
+        } else {
+          await legoCharacteristic.writeValue(pakket);
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        status.innerHTML =
+          "❌ Motoropdracht mislukt.<br><br>" +
+          (error.message || error.name);
+      }
+    }
+
+    motorKnop.addEventListener("click", async () => {
+
+      status.textContent =
+        "⚙️ Motor A draait 1 seconde...";
+
+      await stuurMotor(15);
+
+      setTimeout(async () => {
+        await stuurMotor(0);
+
+        status.textContent =
+          "✅ Motor A heeft gedraaid en is gestopt.";
+      }, 1000);
     });
+
+    stopKnop.addEventListener("click", async () => {
+
+      await stuurMotor(0);
+
+      status.textContent =
+        "🛑 Motor A gestopt.";
+    });
+
   </script>
 
 </body>
